@@ -44,12 +44,12 @@ Resources:
           - Sid: "AllowOrgAccess"
             Effect: "Allow"
             Principal: "*"
-            Action: s3:GetObject
+            Action: s3:*
             Resource:
               - !Sub "${rDemoBucket.Arn}"
               - !Sub "${rDemoBucket.Arn}/*"
             Condition:
               StringEquals:
                 - "aws:PrincipalOrgID": !Sub "${pAwsOrgId}"
-                - s"aws:ResourceTag/Department": "${aws:PrincipalTag/Department}"
+                - "aws:ResourceTag/Department": "${aws:PrincipalTag/Department}"
 
