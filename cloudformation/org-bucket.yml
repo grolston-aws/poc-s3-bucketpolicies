@@ -33,6 +33,9 @@ Resources:
               Transition:
                 TransitionInDays: 90
                 StorageClass: GLACIER
+        Tags:
+          - Key: "Department"
+            Value: "Engineering"
 
   rLogsBucketPolicy:
     Type: "AWS::S3::BucketPolicy"
