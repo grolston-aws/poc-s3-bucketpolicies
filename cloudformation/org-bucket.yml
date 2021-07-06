@@ -1,0 +1,55 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Demo SSO Tagging S3 Bucket"
+
+Parameters:
+  pAwsOrgId:
+    Type: String
+    Description: The Org ID for the AWS Organization
+
+Resources:
+
+  rDemoBucket:
+    Type: "AWS::S3::Bucket"
+    #checkov:skip=CKV_AWS_18: Ensure the S3 bucket has access logging enabled
+    Properties:
+        BucketName: !Sub "demo-${AWS::AccountId}"
+        BucketEncryption:
+          ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: Yes
+          BlockPublicPolicy: Yes
+          IgnorePublicAcls: Yes
+          RestrictPublicBuckets: Yes
+        VersioningConfiguration:
+          Status: Enabled
+        LifecycleConfiguration:
+          Rules:
+            - Id: Transition90daysRetain7yrs
+              Status: Enabled
+              ExpirationInDays: 2555
+              Transition:
+                TransitionInDays: 90
+                StorageClass: GLACIER
+
+  rLogsBucketPolicy:
+    Type: "AWS::S3::BucketPolicy"
+    Properties:
+      Bucket: !Ref rDemoBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "AllowOrgAccess"
+            Effect: "Allow"
+            Principal: "*"
+            Action: s3:GetObject
+            Resource:
+              - !Sub "${rDemoBucket.Arn}"
+              - !Sub "${rDemoBucket.Arn}/*"
+            Condition:
+              StringEquals:
+                - "aws:PrincipalOrgID": !Sub "${pAwsOrgId}"
+                - s"aws:ResourceTag/Department": "${aws:PrincipalTag/Department}"
+
